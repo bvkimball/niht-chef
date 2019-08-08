@@ -11,6 +11,11 @@
   "files": [
     "index.js"
   ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bvkimball/niht-chef.git"
+  },
+  "homepage": "https://github.com/bvkimball/niht-chef#readme",
   "license": "MIT",
   "dependencies": {
     "follow-redirects": "^1.5.1",
