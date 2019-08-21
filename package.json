@@ -1,6 +1,6 @@
 {
   "name": "@niht/chef",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "main": "./index.js",
   "bin": {
     "bake": "./index.js"
@@ -30,6 +30,8 @@
     "rollup-plugin-string": "^3.0.0",
     "rollup-plugin-terser": "^5.1.1",
     "rollup-plugin-typescript2": "^0.22.1",
+    "rollup-plugin-unpkg": "bvkimball/rollup-plugin-unpkg",
+    "rollup-plugin-url-resolve": "^0.1.1",
     "typescript": "^3.5.3"
   },
   "devDependencies": {

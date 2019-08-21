@@ -6,6 +6,8 @@ const builtins = require("rollup-plugin-node-builtins")
 const commonjs = require("rollup-plugin-commonjs")
 const globals = require("rollup-plugin-node-globals")
 const nodeResolve = require("rollup-plugin-node-resolve")
+const urlResolve = require("rollup-plugin-url-resolve")
+const unpkg = require("rollup-plugin-unpkg")
 const string = require("rollup-plugin-string").string
 const json = require("rollup-plugin-json")
 const typescript = require("rollup-plugin-typescript2")
@@ -47,7 +49,7 @@ const cli = meow(
     $ bake <input>
 
   Options
-    --out,      -o Output file
+    --output,      -o Output file
     --watch,    -w Watch
     --format,   -f Format
     --minify,   -m Minify
@@ -63,6 +65,10 @@ const cli = meow(
         type: "string",
         alias: "n",
       },
+      external: {
+        type: "string",
+        alias: "e",
+      },
       minify: {
         type: "boolean",
         alias: "m",
@@ -76,6 +82,10 @@ const cli = meow(
       string: {
         type: "string",
         alias: "s",
+      },
+      out: {
+        type: "string",
+        alias: "o",
       },
     },
   }
@@ -105,6 +115,7 @@ async function compile(source, outFile, outFormat) {
 
   const plugins = [
     json(),
+    resolveUrls(outFormat),
     nodeResolve({
       jsnext: true,
       main: true,
@@ -164,6 +175,12 @@ async function compile(source, outFile, outFormat) {
     await bundle.write(writeOptions)
     stdout(blue(`fully baked ${bold(outFile)}!`))
   }
+}
+
+function resolveUrls(outFormat) {
+  if (outFormat !== "es") return urlResolve()
+  const transform = (name, version) => `https://cdn.pika.dev/${name}/v${version[0]}`
+  return unpkg({ transform, autoDiscoverExternals: false })
 }
 
 function tsc(entry) {
@@ -276,7 +293,7 @@ async function run() {
     stdout(dim(`baking ${blue().italic(cli.input)}...`))
     const outFile = cli.flags.output || cli.flags.o || "baked.js"
     const outFormat = cli.flags.format || cli.flags.f || "cjs"
-    await compile(cli.input, outFile, outFormat)
+    await compile(`${cli.input}`, outFile, outFormat)
   }
 }
 
