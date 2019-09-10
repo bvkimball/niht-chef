@@ -115,16 +115,19 @@ async function compile(source, outFile, outFormat) {
 
   const plugins = [
     json(),
-    resolveUrls(outFormat),
+    // resolveUrls(outFormat),
     nodeResolve({
       jsnext: true,
       main: true,
+      browser: outFormat === "es",
     }),
-    commonjs({}),
+    commonjs({
+      include: /\/node_modules\//,
+    }),
     globals(),
     builtins(),
     http(),
-    tsc(source),
+    tsc(source, outFormat),
     minify(outFormat),
   ].filter(Boolean)
 
@@ -183,27 +186,30 @@ function resolveUrls(outFormat) {
   return unpkg({ transform, autoDiscoverExternals: false })
 }
 
-function tsc(entry) {
+function tsc(entry, format) {
   // check if source is ts
-  if (extname(entry) !== ".ts" || extname(entry) !== ".tsx") return false
-  return typescript({
-    typescript: require("typescript"),
-    cacheRoot: `./node_modules/.cache/.rts2_cache_${format}`,
-    tsconfigDefaults: {
-      compilerOptions: {
-        sourceMap: options.sourcemap,
-        declaration: true,
-        jsx: "react",
-        jsxFactory: options.jsx || "h",
+  if (extname(entry) === ".ts" || extname(entry) === ".tsx") {
+    return typescript({
+      typescript: require("typescript"),
+      cacheRoot: `./node_modules/.cache/.rts2_cache_${format}`,
+      tsconfigDefaults: {
+        compilerOptions: {
+          experimentalDecorators: true,
+          sourceMap: false,
+          declaration: true,
+          jsx: "react",
+          jsxFactory: "h",
+        },
       },
-    },
-    tsconfig: options.tsconfig,
-    tsconfigOverride: {
-      compilerOptions: {
-        target: "esnext",
+      tsconfig: "tsconfig.json",
+      tsconfigOverride: {
+        compilerOptions: {
+          // target: "es5",
+        },
       },
-    },
-  })
+    })
+  }
+  return false
 }
 
 function minify(outFormat) {
